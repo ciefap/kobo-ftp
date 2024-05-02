@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS public.stations
 (
-    id integer NOT NULL DEFAULT nextval('stations_id_seq'::regclass),
+    id integer NOT NULL SERIAL,
     station character varying COLLATE pg_catalog."default",
     frequency character varying COLLATE pg_catalog."default",
     "timestamp" timestamp without time zone,
