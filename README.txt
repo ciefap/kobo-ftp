@@ -16,3 +16,6 @@ nodejs kobo.js --date_from 2024-01-01
 
 FTP:
 nodejs ftp.js
+
+CLEAN-FTP:
+nodejs clean-ftp.js
