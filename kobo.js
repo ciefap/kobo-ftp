@@ -44,12 +44,12 @@ async function saveDataToDatabase(data) {
         for (const item of Object.values(data)) {
             const query = `
                 INSERT INTO vuelos (id, id_vuelo, data, lugar, area_vuelo, created_at, updated_at)
-                VALUES             ($1, $2, $3, ST_POINT($4, $5), ST_SetSrid(ST_PolygonFromText($6),4326), NOW(), NOW())
+                VALUES             ($1, $2, $3, ST_SetSrid(ST_POINT($4, $5), 4326), ST_SetSrid(ST_PolygonFromText($6), 4326), NOW(), NOW())
                 ON CONFLICT (id) DO UPDATE
                 SET
                     id_vuelo = $2,
                     data = $3,
-                    lugar = ST_POINT($4, $5),
+                    lugar = ST_SetSrid(ST_POINT($4, $5), 4326),
                     area_vuelo = ST_SetSrid(ST_PolygonFromText($6),4326),
                     updated_at = NOW();`;
             let poligonoWKT = null;

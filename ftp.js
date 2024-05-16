@@ -41,15 +41,27 @@ async function downloadFTP() {
 
 async function getLastRecord(client, frequency, station) {
     const query = `SELECT MAX(timestamp)
-                   FROM stations
+                   FROM stations_data
                    WHERE frequency = '${frequency}'
                    AND station = '${station}'`;
     const timestamp = await client.query(query);
     return timestamp ? timestamp.rows[0].max : null;
 }
 
+async function cleanFolder(folder) {
+    fs.readdirSync(folder).forEach(file => {
+        const filePath = path.join(folder, file);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+          console.log(`Archivo eliminado: ${filePath}`);
+        }
+    });
+    return;
+}
+
 async function processDATStations() {
     const folder = process.env.FOLDER_DAT;
+
     const pool = new Pool({
         connectionString: process.env.DATABASE_URL
     });
@@ -61,13 +73,15 @@ async function processDATStations() {
 
         for (const file of filesDat) {
             const pathFile = path.join(folder, file);
-            const matches = file.match(/WStn_(\d+)_WeathDat(\w+).dat/);
-            if (!matches || matches.length !== 3) {
+            const regex = /^([a-zA-Z0-9_\s]+)_(WeathDat|Weather)(\w+)\.dat$/;
+            const matches = file.match(regex);
+
+            if (!matches || matches.length !== 4) {
                 console.error(`Nombre de archivo no válido: ${file}`);
                 continue;
             }
-            const station = `WStn_${matches[1]}`;
-            const frequency = matches[2] === 'Day' ? '24hs' : matches[2];
+            const station = `${matches[1]}`;
+            const frequency = matches[3] === 'Day' ? '24hs' : matches[3];
 
             const lastRecord = await getLastRecord(client, frequency, station);
 
@@ -85,7 +99,7 @@ async function processDATStations() {
                         if (lineCount > 2 && new Date(row.timestamp) > new Date(lastRecord)) {
                             try {
                                 const query = {
-                                    text: `INSERT INTO stations(${Object.keys(row).join(', ')}) VALUES(${Object.values(row).map((value, index) => `$${index + 1}`).join(', ')})`,
+                                    text: `INSERT INTO stations_data(${Object.keys(row).join(', ')}) VALUES(${Object.values(row).map((value, index) => `$${index + 1}`).join(', ')})`,
                                     values: Object.values(row)
                                 };
                                 await client.query(query);
@@ -112,6 +126,7 @@ async function processDATStations() {
         await Promise.all(promises);
         console.log('Todos los archivos DAT han sido procesados.');
         await client.release();
+        await cleanFolder(folder);
     } catch (error) {
         console.error('Error al procesar los archivos DAT:', error);
     }
