@@ -72,7 +72,8 @@ async function saveDataToDatabase(data) {
 }
 
 async function main() {
-    console.log('-- Starting --');
+    const now = new Date().toString();
+    console.log(`-- Starting [${now}]--`);
     const dateFromIndex = process.argv.indexOf('--date_from');
     const dateFrom = dateFromIndex !== -1 ? process.argv[dateFromIndex + 1] : null;
 

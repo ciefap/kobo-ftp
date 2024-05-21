@@ -136,7 +136,8 @@ async function processDATStations() {
 
 
 async function main() {
-    console.log('-- Starting --');
+    const now = new Date().toString();
+    console.log(`-- Starting [${now}]--`);
 
     /* Get Stations Data */
     await downloadFTP();
