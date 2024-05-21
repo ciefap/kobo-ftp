@@ -129,6 +129,8 @@ async function processDATStations() {
         await cleanFolder(folder);
     } catch (error) {
         console.error('Error al procesar los archivos DAT:', error);
+    } finally {
+        await pool.end();
     }
 }
 
